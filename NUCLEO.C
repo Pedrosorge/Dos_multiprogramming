@@ -1,23 +1,6 @@
 #include "SYSTEM.H"
 #include "STRING.H"
-
-typedef enum {ready, finished, blocked} STATUS;
-
-typedef PTR_DESC* PTR_DESC_PROC;
-
-typedef struct BCP{
-    char name[150];
-    STATUS status;
-    PTR_DESC_PROC context;
-    struct BCP *next;
-} BCP;
-
-typedef struct {
-    BCP *head;
-    BCP *tail;
-    BCP *prim;
-    int num_process;
-} PROCESS_LIST;
+#include "NUCLEO.H"
 
 PROCESS_LIST process_list; /* Lista de processos do escalonador*/
 PTR_DESC dMain;
@@ -28,7 +11,7 @@ void initilize_process_list(PROCESS_LIST *pl){
     pl->head = NULL;
     pl->tail = NULL;
     pl->prim = NULL;
-    pl->num_process =0;
+    pl->num_process=0;
 }
 
 /* Função para adicionar bcp to processo na lista do escalonador */
@@ -47,6 +30,21 @@ void add_to_process_list(PROCESS_LIST *pl, BCP *bcp){
     pl->num_process++;
 }
 
+/* Função para achar o próximo processo disponível */
+int next_bcp(PROCESS_LIST *list){
+    if(list->prim==NULL) return 0;
+    int aux=0;
+    while(list->prim->STATUS == blocked){
+        list->prim = list->prim->next;
+        if(++aux == list->num_process){
+            exit(0);
+            volta_dos(); /* FALTA IMPLEMENTAR*/
+        }
+    }
+    return 1;
+}
+
+
 /* Função para criar novo processo */
 void far create_process(char name[150], void far (*end_proc)()){
     BCP *aux = (BCP *) malloc(sizeof(BCP));                     /* Aloca BCP */
@@ -57,13 +55,6 @@ void far create_process(char name[150], void far (*end_proc)()){
     aux->status = ready;                                        /* Inicializa o estado do processo */
     
     add_to_process_list(&process_list, aux);                    /* Adiciona o bcp na lista de processos do escalonador */
-}
-
-/* Função para achar o próximo processo disponível */
-int next_bcp(PROCESS_LIST *list){
-    if(list->prim==NULL) return 0;
-    list->prim = list->prim->next;
-    return 1;
 }
 
 void far escalonator(){
