@@ -1,0 +1,24 @@
+#include "STDIO.H"
+#include "SYSTEM.H"
+
+void tic(){
+    printf("tic");
+}
+
+void tac(){
+    printf("tac\n");
+}
+
+int main(){
+
+    PTR_DESC dTic = cria_desc();
+    PTR_DESC dTac = cria_desc();
+    
+    newprocess((*tic),dTic);
+    newprocess((*tac),dTic);
+
+    
+
+    return 0;
+
+}
