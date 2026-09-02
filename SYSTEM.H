@@ -1,3 +1,5 @@
+#ifndef SYSTEM_H
+#define SYSTEM_H
 #include <stdio.h>
 #include <dos.h>
 #include <setjmp.h>
@@ -38,4 +40,4 @@ extern void far iotransfer();
 
 
 
-
+#endif
