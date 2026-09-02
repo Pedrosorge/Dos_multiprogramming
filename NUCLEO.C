@@ -1,10 +1,27 @@
 #include "SYSTEM.H"
-#include "STRING.H"
+#include <dos.h>
+#include <string.h>
 #include "NUCLEO.H"
 
-PROCESS_LIST process_list; /* Lista de processos do escalonador*/
+PROCESS_LIST *process_list; /* Lista de processos do escalonador*/
 PTR_DESC dMain;
 PTR_DESC dEsc;
+
+APONTA_REG_CRIT a;
+
+/* Realoca a interrupção anterior que estava configurada no dos */
+void far volta_dos(){
+
+    disable();
+
+    setvect(p_est->num_vetor,p_est->int_anterior);
+    p_est->p_destino = dMain;
+
+    enable();
+
+    exit(0);
+
+}
 
 /* Função para inicializar lista de bcps*/
 void initilize_process_list(PROCESS_LIST *pl){
@@ -44,8 +61,6 @@ int next_bcp(PROCESS_LIST *list){
         list->prim = list->prim->next;
     }
 
-    volta_dos();
-    exit(0);
     return 0;
 }
 
@@ -97,32 +112,90 @@ void far create_process(char name[150], void far (*end_proc)()){
     newprocess(end_proc, aux->context);                         /* Inicializa o descritor */
     aux->status = ready;                                        /* Inicializa o estado do processo */
     
-    add_to_process_list(&process_list, aux);                    /* Adiciona o bcp na lista de processos do escalonador */
+    add_to_process_list(process_list, aux);                    /* Adiciona o bcp na lista de processos do escalonador */
 }
+
 
 /* Função da corrotina do escalonador de processos */
 void far escalonator(){
-    p_est->num_vetor = 8;
-    p_est->p_origem = dEsc;
+    
+    p_est->num_vetor = 8;       /* Indica a posição da interrupção que deve ser alterada na tebela de interrupções */
+    p_est->p_origem = dEsc;     /* Indica que a origem da rotina de interrupção é o escalonador */
+
+    /* Configura os registradores para saber se alguma rotina que não pode ser interrompida está sendo executada */
+    _AH=0x34;                   
+    _AL=0x00;
+    geninterrupt(0x21);
+    a.x.bx1=_BX;
+    a.x.es1=_ES;
     
     while(1){
-        if(process_list.prim != NULL){
-            p_est->p_destino = process_list.prim->context;
-            iotransfer(); 
+
+        if(process_list->prim != NULL){
+            if(*(a.y) == 0) {
+                p_est->p_destino = process_list->prim->context;
+                iotransfer(); 
+            }
         }
-        if (!next_bcp(&process_list)) exit(0);
+
+        if (!next_bcp(process_list)) exit(0);
     }
 
 }
 
 
+/*========================================*/
+/* Funções para projetos multiprogramados */
+/*========================================*/
+
+/* Inicializa semáforos*/
+void initialize_semaphore(SEMAPHORE *s, int count){
+    s->count=count;
+    s->Q = (BLOCKED_PROCESS_QUEUE *) malloc(sizeof(BLOCKED_PROCESS_QUEUE));
+    initilize_blocked_process_queue(s->Q->head);
+}
+
+/* Diretica P dos semáforos*/
+void P(SEMAPHORE *s){
+    disable();
+    if(s->count>0){
+        s->count--;
+        enable();
+    }
+    else{
+        add_blocked_process_to_queue(s->Q,process_list->prim);
+        PTR_DESC_PROC aux = process_list->prim;
+        if(!next_bcp(process_list)) volta_dos();
+        enable();
+        transfer(aux->context, process_list->prim->context);
+    }
+}
+
+/* Diretiva V dos semáforos*/
+void V(SEMAPHORE *s){
+    disable();
+    if(s->Q != NULL){
+        remove_bloqued_process_from_queue(s->Q);
+    }
+    else{
+        s->count++;
+    }
+    enable();
+}
+
+
 /* Código principal */
 int main(){
-    initilize_process_list(&process_list); /* Inicializa a lista de processos */
+
+    process_list = (PROCESS_LIST *)malloc(sizeof(PROCESS_LIST));
+    initilize_process_list(process_list);      /* Inicializa a lista de processos do escalonador*/
 
     dMain = cria_desc();
     dEsc = cria_desc();
     newprocess(escalonator,dEsc);
+
+    create_process("tic", tic);
+    create_process("tic", tac);
 
     transfer(dMain, dEsc);
 

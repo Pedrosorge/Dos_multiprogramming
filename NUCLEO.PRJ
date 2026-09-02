@@ -1,3 +1,2 @@
-nucleo.c (system.h sytem.obj string.h string.obj)
+nucleo.c (system.h nucleo.h)
 system.obj
-string.obj

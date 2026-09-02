@@ -31,7 +31,6 @@ extern estrutura_io est_io1;
 
 extern void far transfer(PTR_DESC or,PTR_DESC dest);
 
-
 extern void  far newprocess(void far(*proc)(),PTR_DESC end_desc);
 
 extern PTR_DESC cria_desc();

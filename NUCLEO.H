@@ -35,13 +35,33 @@ typedef struct{
 typedef struct{
         BLOCKED_PROCESS_QUEUE *Q;
         int count;
-} Semaphore; /* Definição de Semaphore */
+} SEMAPHORE; /* Definição de semáforo */
+
+typedef struct registros{
+        unsigned bx1,es1;
+} regis;
+
+typedef union k{
+        regis x;
+        char far *y;
+} APONTA_REG_CRIT;
+
+
+void far volta_dos();
+
 void initilize_process_list(PROCESS_LIST *pl);
 void add_to_process_list(PROCESS_LIST *pl, BCP *bcp);
 int next_bcp(PROCESS_LIST *list);
+
 void initilize_blocked_process_queue(BLOCKED_PROCESS_QUEUE *bpq);
 void add_blocked_process_to_queue(BLOCKED_PROCESS_QUEUE *bpq, PTR_DESC_PROC bcp);
 void remove_bloqued_process_from_queue(BLOCKED_PROCESS_QUEUE *bpq);
+
+void initialize_semaphore(SEMAPHORE *s, int count);
+void P(SEMAPHORE *s);
+void V(SEMAPHORE *s);
+
 void far create_process(char name[150], void far (*end_proc)());
 void far escalonator();
+
 #endif
