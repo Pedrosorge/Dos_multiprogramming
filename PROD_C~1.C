@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #define TESTE_SIZE 200
-#define BUFFER_SIZE 10
+#define BUFFER_SIZE 5
 #define MAX_RAND 20
 
 extern PTR_DESC dMain, dEsc;
@@ -23,14 +23,14 @@ void far produtor(){
         P(empty);
         P(mutex);
         buffer[f_buf] = rand() % MAX_RAND;
-        fprintf(arq,"Produtor produziu: %d\n", buffer[f_buf]);
-        fflush(log_arq);
+        fprintf(arq,"%s produziu: %d\n", running_bcp->name,buffer[f_buf]);
+        fflush(arq);
         f_buf=(f_buf+1)%BUFFER_SIZE;
         V(mutex);
         V(full);
     }
-    fprintf(arq,"Produtor TERMINOU após %d iterações\n", i);
-    fflush(log_arq);
+    fprintf(arq,"%s TERMINOU após %d iterações\n", running_bcp->name, i);
+    fflush(arq);
     running_bcp->status = finished;
     while(1); 
 }
@@ -40,14 +40,14 @@ void far consumidor(){
     for(i=0;i<TESTE_SIZE;i++){
         P(full);
         P(mutex);
-        fprintf(arq,"Consumidor consumiu: %d\n", buffer[i_buf]);
-        printf("Consumidor consumiu: %d\n", buffer[i_buf]);
+        fprintf(arq,"%s consumiu: %d\n", running_bcp->name,buffer[i_buf]);
+        fflush(arq);
         i_buf=(i_buf+1)%BUFFER_SIZE;
         V(mutex);
         V(empty);
     }
-    fprintf(arq,"Consumidor TERMINOU após %d iterações\n", i);
-    fflush(log_arq);
+    fprintf(arq,"%s TERMINOU após %d iterações\n", running_bcp->name,i);
+    fflush(arq);
     running_bcp->status = finished;
     while(1); 
 }
@@ -80,8 +80,10 @@ int main(){
     initialize_semaphore(empty,BUFFER_SIZE);
     initialize_semaphore(full, 0);
 
-    create_process("produtor",produtor);
-    create_process("consumidor",consumidor);
+    create_process("produtor1",produtor);
+    create_process("produtor2",produtor);
+    create_process("consumidor1",consumidor);
+    create_process("consumidor2",consumidor);
     transfer(dMain, dEsc);
 
     fclose(arq);
