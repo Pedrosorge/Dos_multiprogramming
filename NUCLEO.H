@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <dos.h>
 #include <setjmp.h>
+#include "SYSTEM.H"
 #include <stdlib.h>
 
 typedef enum {ready, finished, blocked} STATUS;
@@ -46,20 +47,21 @@ typedef union k{
         char far *y;
 } APONTA_REG_CRIT;
 
+extern PTR_DESC_PROC running_bcp;
 
 void far volta_dos();
 
-void initilize_process_list(PROCESS_LIST *pl);
-void add_to_process_list(PROCESS_LIST *pl, BCP *bcp);
-int next_bcp(PROCESS_LIST *list);
+void far initilize_process_list(PROCESS_LIST *pl);
+void far add_to_process_list(PROCESS_LIST *pl, BCP *bcp);
+int far next_bcp(PROCESS_LIST *list);
 
-void initilize_blocked_process_queue(BLOCKED_PROCESS_QUEUE *bpq);
-void add_blocked_process_to_queue(BLOCKED_PROCESS_QUEUE *bpq, PTR_DESC_PROC bcp);
-void remove_bloqued_process_from_queue(BLOCKED_PROCESS_QUEUE *bpq);
+void far initilize_blocked_process_queue(BLOCKED_PROCESS_QUEUE *bpq);
+void far add_blocked_process_to_queue(BLOCKED_PROCESS_QUEUE *bpq, PTR_DESC_PROC bcp);
+void far remove_bloqued_process_from_queue(BLOCKED_PROCESS_QUEUE *bpq);
 
-void initialize_semaphore(SEMAPHORE *s, int count);
-void P(SEMAPHORE *s);
-void V(SEMAPHORE *s);
+void far initialize_semaphore(SEMAPHORE *s, int count);
+void far P(SEMAPHORE *s);
+void far V(SEMAPHORE *s);
 
 void far create_process(char name[150], void far (*end_proc)());
 void far escalonator();

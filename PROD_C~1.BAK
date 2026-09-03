@@ -1,0 +1,66 @@
+#include "NUCLEO.H"
+#include <stdio.h>
+#define TESTE_SIZE 5000
+#define BUFFER_SIZE 100
+#define MAX_RDM 20
+
+PTR_DESC dMain, dEsc;
+SEMAPHORE *mutex, *empty, *full;
+
+int i, f;
+int buffer[BUFFER_SIZE];
+
+void far produtor(){
+    int i;
+
+    for(i=0;i<TESTE_SIZE;i++){
+        P(empty);
+        P(mutex);
+        buffer[f] = rand(MAX_RDM);
+        f=(f+1)%BUFFER_SIZE;
+        V(mutex);
+        V(full);
+    }    
+
+}
+
+void far consumidor(){
+    int i;
+
+    for(i=0;i<TESTE_SIZE;i++){
+        P(full);
+        P(mutex);
+        printf("Consumidor consumiu: %d", buffer[i]);
+        i=(i+1)%BUFFER_SIZE;
+        V(mutex);
+        V(empty);
+    }    
+
+}
+
+
+int main(){
+
+    process_list = (PROCESS_LIST *)malloc(sizeof(PROCESS_LIST));
+    initilize_process_list(process_list);      /* Inicializa a lista de processos do escalonador*/
+
+    dMain = cria_desc();
+    dEsc = cria_desc();
+    newprocess(escalonator,dEsc);
+    
+    i=0,f=0;
+    initialize_semaphore(mutex,1);
+    initialize_semaphore(empty, BUFFER_SIZE);
+    initialize_semaphore(full, 0);
+
+
+    create_process("produtor",produtor);
+    create_process("consumidor",consumidor);
+
+    transfer(dMain, dEsc);
+
+    return 0;
+
+
+
+}

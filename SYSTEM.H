@@ -6,7 +6,7 @@
 /*#include <alloc.h>*/
 #include <stdlib.h>
 
-#define MAX_PILHA  1000
+#define MAX_PILHA 500
 
 
 typedef struct {

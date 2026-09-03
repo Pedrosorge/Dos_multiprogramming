@@ -1,0 +1,76 @@
+Nome: consumidor Estado: A
+Iniciou execução de consumidor!
+P() semaforo=3D9C fila=3DB4 count=0
+P() entrou no else, bloqueando consumidor
+add_blocked: bpq=3DB4 head=0000 head->bcp=consumidor
+Nome: produtor Estado: A
+Iniciou execução de produtor!
+P() semaforo=3D94 fila=3DAC count=10
+P() entrou no if, count=10
+P() semaforo=3D8C fila=3DA4 count=1
+P() entrou no if, count=1
+V() semaforo=3D8C fila=3DA4 head=NULL
+V() semaforo=3D9C fila=3DB4 head=NULL
+P() semaforo=3D94 fila=3DAC count=9
+P() entrou no if, count=9
+P() semaforo=3D8C fila=3DA4 count=1
+P() entrou no if, count=1
+V() semaforo=3D8C fila=3DA4 head=NULL
+V() semaforo=3D9C fila=3DB4 head=NULL
+P() semaforo=3D94 fila=3DAC count=8
+P() entrou no if, count=8
+P() semaforo=3D8C fila=3DA4 count=1
+P() entrou no if, count=1
+V() semaforo=3D8C fila=3DA4 head=NULL
+V() semaforo=3D9C fila=3DB4 head=NULL
+P() semaforo=3D94 fila=3DAC count=7
+P() entrou no if, count=7
+P() semaforo=3D8C fila=3DA4 count=1
+P() entrou no if, count=1
+V() semaforo=3D8C fila=3DA4 head=NULL
+V() semaforNome: consumidor Estado: B
+Nome: produtor Estado: A
+Iniciou execução de produtor!
+o=3D9C fila=3DB4 head=NULL
+P() semaforo=3D94 fila=3DAC count=6
+P() entrou no if, count=6
+P() semaforo=3D8C fila=3DA4 count=1
+P() entrou no if, count=1
+V() semaforo=3D8C fila=3DA4 head=NULL
+V() semaforo=3D9C fila=3DB4 head=NULL
+P() semaforo=3D94 fila=3DAC count=5
+P() entrou no if, count=5
+P() semaforo=3D8C fila=3DA4 count=1
+P() entrou no if, count=1
+V() semaforo=3D8C fila=3DA4 head=NULL
+V() semaforo=3D9C fila=3DB4 head=NULL
+P() semaforo=3D94 fila=3DAC count=4
+P() entrou no if, count=4
+P() semaforo=3D8C fila=3DA4 count=1
+P() entrou no if, count=1
+V() semaforo=3D8C fila=3DA4 head=NULL
+V() semaforo=3D9C fila=3DB4 head=NULL
+P() semaforo=3D94 fila=3DAC count=3
+P() entrou no if, count=3
+P() semaforo=3D8C fila=3DA4 count=1
+P() entrou no if, count=1
+V() semaforo=3D8C fila=3DA4 head=NULL
+V() semaforo=3D9C fila=3DB4 head=NULL
+P() semaforo=3D94 fila=3DAC count=2
+P() entrou no if, count=2
+P() semaforo=3D8C fila=3DA4 count=1
+P() entrou no if, count=1
+V() semaforo=3D8C fila=3DA4 head=NULL
+V() semaforo=3D9C fila=3DB4 head=NULL
+P() semaforo=3D94 fila=3DAC count=1
+P() entrou no if, count=1
+P() semaforo=3D8C fila=3DA4 count=1
+P() entrou no if, count=1
+V() semaforo=3D8C fila=3DA4 head=NULL
+V() semaforo=3D9C fila=3DB4 head=NULL
+P() semaforo=3D94 fila=3DAC count=0
+P() entrou no else, bloqueando produtor
+add_blocked: bpq=3DAC head=0000 head->bcp=produtor
+Nome: consumidor Estado: B
+Nome: produtor Estado: B
+Não encontrou processo desbloqueado!

@@ -6,8 +6,10 @@
 PROCESS_LIST *process_list; /* Lista de processos do escalonador*/
 PTR_DESC dMain;
 PTR_DESC dEsc;
+extern FILE *log_arq;
 
 APONTA_REG_CRIT a;
+PTR_DESC_PROC running_bcp = NULL;
 
 /* Realoca a interrupção anterior que estava configurada no dos */
 void far volta_dos(){
@@ -19,12 +21,13 @@ void far volta_dos(){
 
     enable();
 
+    transfer(dEsc,dMain);
     exit(0);
 
 }
 
 /* Função para inicializar lista de bcps*/
-void initilize_process_list(PROCESS_LIST *pl){
+void far initilize_process_list(PROCESS_LIST *pl){
     pl->head = NULL;
     pl->tail = NULL;
     pl->prim = NULL;
@@ -32,7 +35,7 @@ void initilize_process_list(PROCESS_LIST *pl){
 }
 
 /* Função para adicionar bcp to processo na lista do escalonador */
-void add_to_process_list(PROCESS_LIST *pl, BCP *bcp){
+void far add_to_process_list(PROCESS_LIST *pl, BCP *bcp){
     if(pl->head == NULL){
         pl->head = bcp;
         pl->tail = bcp;
@@ -48,30 +51,39 @@ void add_to_process_list(PROCESS_LIST *pl, BCP *bcp){
 }
 
 /* Função para achar o próximo processo disponível */
-int next_bcp(PROCESS_LIST *list){
+int far next_bcp(PROCESS_LIST *list){
     int i;
-    if(list->prim==NULL) return 0;
-    
-    list->prim = list->prim->next;
-
-    for (i = 0; i < list->num_process; i++) {
-        if (list->prim->status != blocked) {
-            return 1; /* Encontrou um processo pronto */
-        }
-        list->prim = list->prim->next;
+    char s;
+    if(list->prim==NULL){
+        fprintf(log_arq,"Fila vazia!!\n");
+        return 0;
     }
 
+    for (i = 0; i < list->num_process; i++) {
+        list->prim = list->prim->next;
+
+        if(list->prim->status == blocked) s = 'B';
+        else if(list->prim->status == finished) s = 'F';
+        else s = 'A';
+
+        fprintf(log_arq,"Nome: %s Estado: %c\n", list->prim->name, s);
+        if (list->prim->status != blocked && list->prim->status != finished) {
+            return 1; /* Encontrou um processo pronto */
+        }
+    }
+    
+    fprintf(log_arq,"Não encontrou processo desbloqueado!\n");
     return 0;
 }
 
 /* Função para inicializar fila de processos bloqueados */
-void initilize_blocked_process_queue(BLOCKED_PROCESS_QUEUE *bpq){
+void far initilize_blocked_process_queue(BLOCKED_PROCESS_QUEUE *bpq){
     bpq->head = NULL;
     bpq->tail = NULL;
 }
 
 /* Função para adicionar processo à fila de bloqueados */
-void add_blocked_process_to_queue(BLOCKED_PROCESS_QUEUE *bpq, PTR_DESC_PROC bcp){
+void far add_blocked_process_to_queue(BLOCKED_PROCESS_QUEUE *bpq, PTR_DESC_PROC bcp){
 
     BLOCKED_QUEUE_NODE *aux = (BLOCKED_QUEUE_NODE *) malloc(sizeof(BLOCKED_QUEUE_NODE)); /* Instancia nó que aponta para o processo bloqueado */
     aux->bcp = bcp; /* Inicializa o nó */
@@ -86,11 +98,11 @@ void add_blocked_process_to_queue(BLOCKED_PROCESS_QUEUE *bpq, PTR_DESC_PROC bcp)
         bpq->tail->next = aux;
         bpq->tail = aux;
     }
-
+    fprintf(log_arq, "add_blocked: bpq=%p head=%p head->bcp=%s\n", bpq, bpq->head, bpq->head->bcp->name);
 }
 
 /* Função para remover processo da fila de bloqueados */
-void remove_bloqued_process_from_queue(BLOCKED_PROCESS_QUEUE *bpq){
+void far remove_bloqued_process_from_queue(BLOCKED_PROCESS_QUEUE *bpq){
 
     BLOCKED_QUEUE_NODE *temp;    
     if(bpq->head != NULL){
@@ -128,19 +140,22 @@ void far escalonator(){
     geninterrupt(0x21);
     a.x.bx1=_BX;
     a.x.es1=_ES;
-    
+
     while(1){
+
+        if (!next_bcp(process_list)) {
+            volta_dos();    
+        }
 
         if(process_list->prim != NULL){
             if(*(a.y) == 0) {
+                fprintf(log_arq,"Iniciou execução de %s!\n", process_list->prim->name);
+                running_bcp = process_list->prim;
                 p_est->p_destino = process_list->prim->context;
-                iotransfer(); 
+                iotransfer();  
             }
         }
-
-        if (!next_bcp(process_list)) exit(0);
-    }
-
+    } 
 }
 
 
@@ -149,32 +164,37 @@ void far escalonator(){
 /*========================================*/
 
 /* Inicializa semáforos*/
-void initialize_semaphore(SEMAPHORE *s, int count){
+void far initialize_semaphore(SEMAPHORE *s, int count){
     s->count=count;
     s->Q = (BLOCKED_PROCESS_QUEUE *) malloc(sizeof(BLOCKED_PROCESS_QUEUE));
-    initilize_blocked_process_queue(s->Q->head);
+    initilize_blocked_process_queue(s->Q);
 }
 
 /* Diretica P dos semáforos*/
-void P(SEMAPHORE *s){
+void far P(SEMAPHORE *s){
+    PTR_DESC aux_context; 
+    
     disable();
+    fprintf(log_arq, "P() semaforo=%p fila=%p count=%d\n", s, s->Q, s->count);
     if(s->count>0){
+        fprintf(log_arq, "P() entrou no if, count=%d\n", s->count);
         s->count--;
         enable();
     }
     else{
+        fprintf(log_arq, "P() entrou no else, bloqueando %s\n", process_list->prim->name);
         add_blocked_process_to_queue(s->Q,process_list->prim);
-        PTR_DESC_PROC aux = process_list->prim;
-        if(!next_bcp(process_list)) volta_dos();
+        aux_context = process_list->prim->context;
         enable();
-        transfer(aux->context, process_list->prim->context);
+        transfer(aux_context, dEsc);
     }
 }
 
 /* Diretiva V dos semáforos*/
-void V(SEMAPHORE *s){
+void far V(SEMAPHORE *s){
     disable();
-    if(s->Q != NULL){
+    fprintf(log_arq, "V() semaforo=%p fila=%p head=%s\n", s, s->Q, s->Q->head ? s->Q->head->bcp->name : "NULL");
+    if(s->Q->head != NULL){
         remove_bloqued_process_from_queue(s->Q);
     }
     else{
@@ -183,22 +203,3 @@ void V(SEMAPHORE *s){
     enable();
 }
 
-
-/* Código principal */
-int main(){
-
-    process_list = (PROCESS_LIST *)malloc(sizeof(PROCESS_LIST));
-    initilize_process_list(process_list);      /* Inicializa a lista de processos do escalonador*/
-
-    dMain = cria_desc();
-    dEsc = cria_desc();
-    newprocess(escalonator,dEsc);
-
-    create_process("tic", tic);
-    create_process("tic", tac);
-
-    transfer(dMain, dEsc);
-
-    return 0;
-
-}
