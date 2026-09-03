@@ -24,12 +24,15 @@ void far produtor(){
         P(mutex);
         buffer[f_buf] = rand() % MAX_RAND;
         fprintf(arq,"Produtor produziu: %d\n", buffer[f_buf]);
+        fflush(log_arq);
         f_buf=(f_buf+1)%BUFFER_SIZE;
         V(mutex);
         V(full);
     }
     fprintf(arq,"Produtor TERMINOU após %d iterações\n", i);
+    fflush(log_arq);
     running_bcp->status = finished;
+    while(1); 
 }
 
 void far consumidor(){
@@ -44,12 +47,20 @@ void far consumidor(){
         V(empty);
     }
     fprintf(arq,"Consumidor TERMINOU após %d iterações\n", i);
+    fflush(log_arq);
     running_bcp->status = finished;
+    while(1); 
 }
 
 int main(){
 
     process_list = (PROCESS_LIST *)malloc(sizeof(PROCESS_LIST));
+    
+    if(process_list == NULL){
+        fprintf(log_arq,"Não foi possível alocar process_list!!");
+        fflush(log_arq);
+    }
+
     initilize_process_list(process_list);      /* Inicializa a lista de processos do escalonador*/
 
     arq = fopen("saida.txt", "w");
