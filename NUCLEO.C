@@ -50,10 +50,12 @@ void far add_to_process_list(PROCESS_LIST *pl, BCP *bcp){
 }
 
 /* Função para achar o próximo processo disponível */
+/* Retorna 1 caso tenha processo pronto */
+/* Retorna 0 caso não tenham processos prontos */
 int far next_bcp(PROCESS_LIST *list){
     int i;
     char s;
-
+    
     if(list->prim==NULL){
         return 0;
     }
@@ -66,7 +68,7 @@ int far next_bcp(PROCESS_LIST *list){
         }
     }
     
-    return 0;
+    return 0; /* Não encontrou processo pronto */
 }
 
 /* Função para inicializar fila de processos bloqueados */
@@ -77,13 +79,13 @@ void far initilize_blocked_process_queue(BLOCKED_PROCESS_QUEUE *bpq){
 
 /* Função para adicionar processo à fila de bloqueados */
 void far add_blocked_process_to_queue(BLOCKED_PROCESS_QUEUE *bpq, PTR_DESC_PROC bcp){
-    bcp->status = blocked;
-    bcp->next_blocked = NULL;
+    bcp->status = blocked; /* Marca processo como bloqueado */
+    bcp->next_blocked = NULL; /* Marca próximo do processo adicionado como nulo */
 
-    if(bpq->head == NULL){
+    if(bpq->head == NULL){ /* Inserção na fila vazia */
         bpq->head = bcp;
         bpq->tail = bcp;
-    } else {
+    } else { /* Insersão na fila com item */
         bpq->tail->next_blocked = bcp;
         bpq->tail = bcp;
     }
@@ -92,14 +94,13 @@ void far add_blocked_process_to_queue(BLOCKED_PROCESS_QUEUE *bpq, PTR_DESC_PROC 
 /* Função para remover processo da fila de bloqueados */
 void far remove_bloqued_process_from_queue(BLOCKED_PROCESS_QUEUE *bpq){
     PTR_DESC_PROC temp;    
-    if(bpq->head != NULL){
+    if(bpq->head != NULL){ /* Remove o primeiro bcp da fila de bloqueados, caso tenha */
         temp = bpq->head;
         temp->status = ready;
         bpq->head = bpq->head->next_blocked;   
         if(bpq->head == NULL) bpq->tail = NULL;
     }
 }
-
 
 /* Função para criar novo processo */
 void far create_process(char name[150], void far (*end_proc)()){
@@ -132,11 +133,15 @@ void far escalonator(){
     a.x.es1=_ES;
 
     while(1){
+
+        /* Se há processo executando rotina que não pode ser interrompida, a gente mantém a execução dele */
         if (*(a.y) != 0 && running_bcp != NULL) {
             p_est->p_destino = running_bcp->context;
             iotransfer();
             continue;
         }
+
+        /* Caso não tenha, a gente procura o próximo processe pronto para por em execução */
         if (!next_bcp(process_list)) {
             volta_dos();    
         }
@@ -159,8 +164,9 @@ void far initialize_semaphore(SEMAPHORE *s, int count){
     s->count=count;
     s->Q = (BLOCKED_PROCESS_QUEUE *) malloc(sizeof(BLOCKED_PROCESS_QUEUE));
 
+    /* Se não conseguir alocar a fila do semáforo, retorna ao dos */
     if(s->Q == NULL){
-        printf("retorna s->Q\n");
+        printf("Não conseguiu alocar a fila s->Q\n");
         volta_dos();
     }
 
@@ -171,17 +177,16 @@ void far initialize_semaphore(SEMAPHORE *s, int count){
 void far P(SEMAPHORE *s){
     PTR_DESC aux_context; 
     
-    disable(); 
+    disable(); /* Desabilita interrupções */
     
-    if(s->count > 0){
+    if(s->count > 0){ /* Verifica se o contador do semáforo pode ser decrementado*/
         s->count--;
         enable();
     }
-    else{
-        add_blocked_process_to_queue(s->Q, process_list->prim);
-        aux_context = process_list->prim->context;
+    else{ /* Se não puder ser decrementado, bloqueia processo */
+        add_blocked_process_to_queue(s->Q, process_list->prim); /* Isere o proceso atual na lista de blockeados */
         enable();
-        transfer(aux_context, dEsc);
+        transfer(process_list->prim->context, dEsc); /* Transfere o controle da UCP para o ecalonador */
     }
 }
 
@@ -189,11 +194,11 @@ void far P(SEMAPHORE *s){
 /* Diretiva V dos semáforos*/
 void far V(SEMAPHORE *s){
     disable();
-    if(s->Q->head != NULL){
-        remove_bloqued_process_from_queue(s->Q);
+    if(s->Q->head != NULL){ /* Verifica se a fila do semáforo tem algum processo */
+        remove_bloqued_process_from_queue(s->Q); /* Remove o processo da fila de bloqueados */
     }
-    else{
-        s->count++;
+    else{ /* Se não tiverem processos bloqueados, incrementa do contador */
+        s->count++; 
     }
     enable();
 }

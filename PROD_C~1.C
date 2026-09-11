@@ -19,7 +19,7 @@ int buffer[BUFFER_SIZE];
 
 void far produtor(){
     int i;
-    for(i=0;i<TESTE_SIZE;i++){
+    for(i=0;i<TESTE_SIZE;i++){ 
         P(empty);
         P(mutex);
         buffer[f_buf] = rand() % MAX_RAND;
