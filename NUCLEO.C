@@ -54,7 +54,6 @@ void far add_to_process_list(PROCESS_LIST *pl, BCP *bcp){
 /* Retorna 0 caso não tenham processos prontos */
 int far next_bcp(PROCESS_LIST *list){
     int i;
-    char s;
     
     if(list->prim==NULL){
         return 0;
