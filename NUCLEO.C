@@ -176,7 +176,6 @@ void far initialize_semaphore(SEMAPHORE *s, int count){
 
 /* Diretiva P dos semaforos */
 void far P(SEMAPHORE *s){
-    PTR_DESC aux_context; 
     
     disable(); /* Desabilita interrupções */
     
