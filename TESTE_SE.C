@@ -14,6 +14,7 @@ void far processo_critico() {
         P(mutex_tela); /* Entra na região crítica */
         
         /* Nenhum outro processo vai conseguir imprimir enquanto este bloco não terminar */
+        /* Nenhum outro processo vai conseguir imprimir enquanto este bloco não terminar */
         printf("Inicio da secao critica \n");
         printf("Processo na CPU : %s\n", running_bcp->name);
         printf("Iteracao atual : %d\n", i);
