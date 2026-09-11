@@ -135,8 +135,9 @@ void far escalonator(){
 
         /* Se há processo executando rotina que não pode ser interrompida, a gente mantém a execução dele */
         if (*(a.y) != 0 && running_bcp != NULL) {
-            p_est->p_destino = running_bcp->context;
+            p_est->p_destino = process_list->prim->context;
             iotransfer();
+            disable();
             continue;
         }
 
@@ -148,6 +149,7 @@ void far escalonator(){
         if(process_list->prim != NULL){
             running_bcp = process_list->prim;
             p_est->p_destino = process_list->prim->context;
+            enable();
             iotransfer();  
         }
     } 
