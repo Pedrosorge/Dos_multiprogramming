@@ -1,12 +1,11 @@
-#ifndef SYSTEM_H
-#define SYSTEM_H
 #include <stdio.h>
-#include <dos.h>
+#include <dos.h> far
 #include <setjmp.h>
 /*#include <alloc.h>*/
 #include <stdlib.h>
 
-#define MAX_PILHA 1000
+#define MAX_PILHA  1000
+
 
 typedef struct {
     unsigned ss,sp;
@@ -30,6 +29,7 @@ extern estrutura_io est_io1;
 
 extern void far transfer(PTR_DESC or,PTR_DESC dest);
 
+
 extern void  far newprocess(void far(*proc)(),PTR_DESC end_desc);
 
 extern PTR_DESC cria_desc();
@@ -38,4 +38,4 @@ extern void far iotransfer();
 
 
 
-#endif
+

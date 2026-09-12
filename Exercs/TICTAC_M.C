@@ -7,7 +7,7 @@ PTR_DESC dTic;
 PTR_DESC dTac;
 
 /* Constante que determina o número de repetições */
-int COUNT = 100;
+int COUNT = 10000;
 
 /* Co-rotina que imprime tic */
 void far tic(){

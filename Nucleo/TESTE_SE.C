@@ -1,5 +1,4 @@
 #include "NUCLEO.H" /* Núclo multiprogramado */
-#include "SYSTEM.H" /* Suporte para multiprogramação */
 #include <stdio.h>
 #include <stdlib.h>
 

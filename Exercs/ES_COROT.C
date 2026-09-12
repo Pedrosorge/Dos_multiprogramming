@@ -43,7 +43,7 @@ void create_process(ESCALATOR_LIST *list, PTR_DESC desc){
 /* Co-rotinas */
 void far tic(){
      while(1){
-            printf("tic1");
+            printf("tic1\n");
      }
 }
 void far tac(){
