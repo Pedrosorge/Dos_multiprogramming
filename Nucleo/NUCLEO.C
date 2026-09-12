@@ -1,4 +1,4 @@
-#include "../Dependências/SYSTEM.H" /* Suporte para multiprogramação */
+#include "SYSTEM.H" /* Suporte para multiprogramação */
 #include <dos.h>
 #include <string.h>
 #include "NUCLEO.H" /* Cabeçalho */

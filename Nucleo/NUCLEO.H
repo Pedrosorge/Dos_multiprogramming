@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <dos.h>
 #include <setjmp.h>
-#include "../Dependências/SYSTEM.H" /* Suporte para multiprogramação */
+#include "SYSTEM.H" /* Suporte para multiprogramação */
 #include <stdlib.h>
 
 /* Estados dos processos */

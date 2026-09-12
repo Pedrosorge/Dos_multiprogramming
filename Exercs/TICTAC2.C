@@ -1,5 +1,5 @@
-#include "../../Dependências/STDIO.H"
-#include "../../Dependências/SYSTEM.H" /* Suporte para multiprogramação */
+#include "STDIO.H"
+#include "SYSTEM.H" /* Suporte para multiprogramação */
 
 typedef struct ESCALATOR_NODE {
     PTR_DESC process;

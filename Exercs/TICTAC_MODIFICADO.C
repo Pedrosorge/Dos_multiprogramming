@@ -1,5 +1,5 @@
-#include "../../Dependências/STDIO.H"
-#include "../../Dependências/SYSTEM.H" /* Suporte para multiprogramação */
+#include "STDIO.H"
+#include "SYSTEM.H" /* Suporte para multiprogramação */
 
 /* Descritores das co-rotinas */
 PTR_DESC dMain;
